@@ -75,7 +75,19 @@
     },200);render();
   }
 
-  ui.start.addEventListener('click',run);$('resetTop').addEventListener('click',reset);$('settings').addEventListener('click',()=>fnPanel(true));
+  function iosAudioUnlock(){
+    const A=window.AudioContext||window.webkitAudioContext;
+    if(!A)return;
+    try{
+      if(!audioCtx)audioCtx=new A();
+      if(audioCtx.state==='suspended')audioCtx.resume();
+      const b=audioCtx.createBuffer(1,1,22050),src=audioCtx.createBufferSource();
+      src.buffer=b;src.connect(audioCtx.destination);src.start(0);
+    }catch(e){}
+  }
+  ui.start.addEventListener('touchstart',iosAudioUnlock,{passive:true});
+  ui.start.addEventListener('pointerdown',iosAudioUnlock,{passive:true});
+  ui.start.addEventListener('click',()=>{iosAudioUnlock();run()});$('resetTop').addEventListener('click',reset);$('settings').addEventListener('click',()=>fnPanel(true));
   function fnPanel(show){$('panel').classList.toggle('hidden',!show)}
   $('save').addEventListener('click',()=>{
     for(const k of ['prep','work','rest','rounds','cycles']){const v=parseInt($(k).value,10),max=(k==='work'?3600:k==='rest'?600:k==='prep'?60:99);cfg[k]=Math.min(max,Math.max(1,Number.isFinite(v)?v:cfg[k]));$(k).value=cfg[k]}
