@@ -79,6 +79,7 @@
     const A=window.AudioContext||window.webkitAudioContext;
     if(!A)return;
     try{
+      if(navigator.audioSession) navigator.audioSession.type='playback';
       if(!audioCtx)audioCtx=new A();
       if(audioCtx.state==='suspended')audioCtx.resume();
       const b=audioCtx.createBuffer(1,1,22050),src=audioCtx.createBufferSource();
