@@ -4,11 +4,16 @@
   let cfg={prep:5,work:59,rest:20,rounds:4,cycles:3},state={},tick=null,last=0,audioCtx=null,wakeLock=null;
   const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
 
-  function ensureAudio(){
+  async function unlockAudio(){
     const A=window.AudioContext||window.webkitAudioContext;
-    if(!A)return;
+    if(!A)return false;
     if(!audioCtx)audioCtx=new A();
-    if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
+    try{
+      if(audioCtx.state==='suspended')await audioCtx.resume();
+      if(audioCtx.state!=='running')return false;
+      tone(1320,0.07,0.10);
+      return true;
+    }catch(e){return false}
   }
   function tone(freq,duration,volume=0.08,delay=0){
     if(!audioCtx)return;
@@ -54,8 +59,8 @@
     else{state.phase='done';state.left=0;state.done=true;state.running=false;clearInterval(tick);tick=null;releaseWakeLock()}
     render();
   }
-  function run(){
-    ensureAudio();
+  async function run(){
+    if(!state.running)await unlockAudio();
     if(state.done)reset();state.running=!state.running;
     if(!state.running){clearInterval(tick);tick=null;releaseWakeLock();render();return}
     requestWakeLock();last=Date.now();
